@@ -1,0 +1,10 @@
+const express = require('express');
+const { getAllTeachers, getCoursesList, createTeacher, assignCourse, getStudentListPDF, getMyInfo } = require('../controllers/teacherController');
+const router = express.Router();
+router.get('/teachers', getAllTeachers);
+router.get('/teachers/me', getMyInfo);
+router.get('/teachers/:email/students', getStudentListPDF);
+router.get('/courses-list', getCoursesList);
+router.post('/teachers', createTeacher);
+router.patch('/teachers/:email/assign-course', assignCourse);
+module.exports = router;

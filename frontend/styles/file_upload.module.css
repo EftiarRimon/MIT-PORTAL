@@ -1,0 +1,37 @@
+/* styles/FileUpload.module.css */
+.file-input {
+  @apply py-2 px-4 border border-gray-300 rounded-md shadow-sm;
+}
+
+.file-input:focus {
+  @apply outline-none ring-2 ring-blue-500;
+}
+
+.btn {
+  @apply py-2 px-4 rounded-md text-white;
+}
+
+.btn-primary {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+.btn-primary:disabled {
+  @apply bg-blue-300 cursor-not-allowed;
+}
+
+.table {
+  @apply table-auto;
+}
+
+.table th,
+.table td {
+  @apply px-4 py-2;
+}
+
+.table th {
+  @apply font-bold;
+}
+
+.table td {
+  @apply border;
+}

@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model notices {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model payment {
+  registration_number Int     @id
+  payment_status      String? @db.VarChar(10)
+}
+
+model result {
+  id                  Int      @id @default(autoincrement())
+  registration_number Int      @unique
+  marks               Decimal? @db.Decimal(5, 2)
+  course_name         String?  @db.VarChar(255)
+  CGPA                Decimal? @db.Decimal(3, 2)
+}
+
+model staff {
+  email    String  @id @db.VarChar(255)
+  name     String? @db.VarChar(255)
+  role     String?  @db.VarChar(50)
+  Password String? @db.VarChar(255)
+}
+
+model student {
+  registration_number String  @unique @db.VarChar(255)
+  email               String  @unique @db.VarChar(255)
+  session             String  @db.VarChar(255)
+  name                String? @db.VarChar(255)
+  password            String? @db.VarChar(255)
+  role                String?  @db.VarChar(50)
+  enrollments         CourseEnrollment[]
+  currentSemester  String? @db.VarChar(10)
+  paymentSubmissions  PaymentSubmission[]  
+}
+
+model enrolled {
+  registration_number String  @unique @db.VarChar(255)
+  email               String  @unique @db.VarChar(255)
+  session             String  @db.VarChar(255)
+  name                String? @db.VarChar(255)
+}
+
+model teacher {
+  email       String  @id @db.VarChar(255) @unique
+  name        String? @db.VarChar(255)
+  role        String?  @db.VarChar(50)
+  designation String? @db.VarChar(100)
+  password    String? @db.VarChar(255)
+  coursecode  String? @db.VarChar(50) 
+}
+
+model MarksheetData {
+  id           Int     @id @default(autoincrement())
+  student_roll String
+  course_code  String
+  course_name  String
+  semester     String
+  session      String
+  marks        Int
+  gpa          Float
+}
+
+model Course {
+  coursecode  String   @id @unique
+  coursename  String
+  type        String
+  credit      Int
+  enrollments CourseEnrollment[]
+}
+
+model CourseEnrollment {
+  id          Int      @id @default(autoincrement())
+  roll        String
+  coursecode  String
+  type        String
+  semester     String
+  session      String
+  status      String   @default("preliminary")
+  course      Course   @relation(fields: [coursecode], references: [coursecode])
+  student     student @relation(fields: [roll], references: [registration_number])
+}
+
+model SelectedCourse {
+  id                Int    @id @default(autoincrement())
+  session           String
+  semester          String
+  coursecode        String
+  currentlyEnrolled Int
+}
+
+model user {
+  email    String  @id @db.VarChar(255)
+  role     String  @db.VarChar(50)
+  password String  @db.VarChar(255)
+}
+model PaymentSubmission {
+  id                  Int       @id @default(autoincrement())
+  registration_number String
+  semester            String
+  session             String
+  transaction_id      String
+  total_amount        Float
+  receipt_url         String?
+  status              String    @default("pending") // pending | verified | rejected
+  submitted_at        DateTime  @default(now())
+  verified_at         DateTime?
+  student             student   @relation(fields: [registration_number], references: [registration_number])
+}
