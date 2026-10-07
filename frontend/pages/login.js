@@ -1,4 +1,4 @@
-
+﻿
 // import React, { useState } from "react";
 // import { useRouter } from "next/router";
 // import axios from 'axios';
@@ -12,7 +12,7 @@
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const response = await axios.post('http://localhost:5000/api/login', { email, password });
+//       const response = await axios.post('http://localhost:5000/api/login', { identifier: email, password });
 //       const { token, userData } = response.data;
 //       localStorage.setItem('token', token);
 //       localStorage.setItem('role', userData.role);
@@ -97,7 +97,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/login', { email, password });
+      const response = await axios.post('http://localhost:5000/api/login', { identifier: email, password });
       const { token, userData } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('role', userData.role);
@@ -123,10 +123,10 @@ const LoginPage = () => {
           {error && <p className="text-red-500">{error}</p>}
           <div>
             <label htmlFor="email" className="block font-medium mb-2">
-              Email
+              Email or Roll Number
             </label>
             <input
-              type="email"
+              type="text"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -169,3 +169,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

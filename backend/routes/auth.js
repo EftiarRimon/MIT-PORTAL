@@ -8,18 +8,34 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  // `identifier` is an email (staff/teacher/student) or a student roll number.
+  // `email` is still accepted so older clients keep working.
+  const raw = req.body.identifier ?? req.body.email;
+  const { password } = req.body;
 
-  if (!email || !password) {
+  if (typeof raw !== 'string' || typeof password !== 'string' || !raw.trim() || !password) {
     return res.status(401).json({ message: 'Invalid email or password' });
   }
+  const identifier = raw.trim();
 
   try {
+    let email = identifier;
+
+    // No "@" means it is a roll number: look up the student's email.
+    if (!identifier.includes('@')) {
+      const student = await prisma.student.findUnique({
+        where: { registration_number: identifier },
+        select: { email: true },
+      });
+      if (!student) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      email = student.email;
+    }
+
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Same message whether the email is missing or the password is wrong,
-    // so nobody can tell if an email exists.
-    // Passwords are stored as bcrypt hashes.
+    // Same message for unknown user and wrong password.
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -44,5 +60,3 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
-
-
