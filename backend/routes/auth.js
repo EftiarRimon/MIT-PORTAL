@@ -1,6 +1,7 @@
 ﻿const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -18,8 +19,8 @@ router.post('/login', async (req, res) => {
 
     // Same message whether the email is missing or the password is wrong,
     // so nobody can tell if an email exists.
-    // Temporary plaintext compare; step 2c replaces it with bcrypt.
-    if (!user || user.password !== password) {
+    // Passwords are stored as bcrypt hashes.
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -43,3 +44,5 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
+

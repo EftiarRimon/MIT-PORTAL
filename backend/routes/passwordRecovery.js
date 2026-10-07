@@ -1,3 +1,4 @@
+﻿const bcrypt = require('bcryptjs');
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const nodemailer = require('nodemailer');
@@ -32,7 +33,7 @@ router.post('/recover-password', async (req, res) => {
   // Update the user's password in the database
   await prisma.user.update({
     where: { email },
-    data: { password: newPassword },
+    data: { password: await bcrypt.hash(newPassword, 10) },
   });
 
   // Send the new password via email
@@ -52,3 +53,4 @@ router.post('/recover-password', async (req, res) => {
 });
 
 module.exports = router;
+

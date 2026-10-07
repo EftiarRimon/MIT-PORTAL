@@ -1,3 +1,4 @@
+﻿const bcrypt = require('bcryptjs');
 // const express = require('express');
 // const { PrismaClient } = require('@prisma/client');
 
@@ -96,7 +97,7 @@ router.post('/students', async (req, res) => {
     session,
     name,
     role: 'student',
-    password: registration_number,
+    password: await bcrypt.hash(registration_number, 10),
   },
 });
     // user table e add koro so student can login
@@ -104,7 +105,7 @@ router.post('/students', async (req, res) => {
       data: {
         email,
         role: 'student',
-        password: registration_number, // default password = registration_number
+        password: await bcrypt.hash(registration_number, 10), // default password = registration_number
       },
     });
     
@@ -127,3 +128,5 @@ router.delete('/enrollments/:registration_number', async (req, res) => {
 });
 
 module.exports = router;
+
+
