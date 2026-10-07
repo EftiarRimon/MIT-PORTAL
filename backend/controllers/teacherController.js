@@ -1,7 +1,8 @@
+﻿const bcrypt = require('bcryptjs');
 const prisma = require('../prisma/prismaClient');
 const htmlPdf = require('html-pdf-node');
 
-// GET /api/teachers — only Course Teachers
+// GET /api/teachers â€” only Course Teachers
 const getAllTeachers = async (req, res) => {
   try {
     const teachers = await prisma.teacher.findMany({
@@ -30,7 +31,7 @@ const getCoursesList = async (req, res) => {
   }
 };
 
-// POST /api/teachers — create new Course Teacher (designation & role fixed)
+// POST /api/teachers â€” create new Course Teacher (designation & role fixed)
 const createTeacher = async (req, res) => {
   const { email, name, password, coursecode } = req.body;
   if (!email || !name || !password) {
@@ -38,26 +39,34 @@ const createTeacher = async (req, res) => {
   }
   try {
     const existing = await prisma.teacher.findUnique({ where: { email } });
-    if (existing) {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existing || existingUser) {
       return res.status(409).json({ error: 'Teacher with this email already exists.' });
     }
-    const teacher = await prisma.teacher.create({
-      data: {
-        email,
-        name,
-        designation: 'Course Teacher',
-        password,
-        role: 'Course Teacher',
-        coursecode: coursecode || null,
-      },
-    });
-    res.status(201).json(teacher);
+    const hash = await bcrypt.hash(password, 10);
+    // teacher profile and login account are created together or not at all
+    const [teacher] = await prisma.$transaction([
+      prisma.teacher.create({
+        data: {
+          email,
+          name,
+          designation: 'Course Teacher',
+          password: hash,
+          role: 'Course Teacher',
+          coursecode: coursecode || null,
+        },
+      }),
+      prisma.user.create({
+        data: { email, role: 'teacher', password: hash },
+      }),
+    ]);
+    const { password: _omit, ...safeTeacher } = teacher;
+    res.status(201).json(safeTeacher);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error: ' + err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
-
 // PATCH /api/teachers/:email/assign-course
 const assignCourse = async (req, res) => {
   const { email } = req.params;
@@ -74,7 +83,7 @@ const assignCourse = async (req, res) => {
   }
 };
 
-// GET /api/teachers/:email/students — PDF
+// GET /api/teachers/:email/students â€” PDF
 const getStudentListPDF = async (req, res) => {
   const { email } = req.params;
   try {
